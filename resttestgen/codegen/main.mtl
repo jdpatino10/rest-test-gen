@@ -1,21 +1,20 @@
 [comment encoding = UTF-8 /]
 [module main('http://www.eclipse.org/uml2/5.0.0/UML')/]
 [import ::utils /]
-[template public generate(class : Class)]
+
+
+[template public generate(c : Class)]
 [comment @main/]
+    [c.genRestTest(c.getModel().getBackendProjectName().concat(c.getModel().baseTestPath()))/]
+[/template]
 
-[file (class.name.concat('ServiceTest.java'), false, 'UTF-8')]
-package co.edu.uniandes.csw.[class.getModelName().toLower()/].test.services;
+[template protected genRestTest(c : Class, path : String) {className : String = c.getAPITestName();}]
+[file (path.concat(className+'.java'), false, 'UTF-8')]
+package [c.getModel().baseGroup()/].test.services;
 
-[for (att : Association | class.getAssociations() )]
-[if (class.name<>att.name.tokenize('_')->first())]
-import co.edu.uniandes.csw.[class.getModelName().toLower()/].dtos.[att.name.tokenize('_')->first()/]DTO;
-[/if]
-[/for]
-import co.edu.uniandes.csw.[class.getModelName().toLower()/].dtos.[class.name/]DTO;
-import co.edu.uniandes.csw.[class.getModelName().toLower()/].dtos.UserDTO;
-import co.edu.uniandes.csw.[class.getModelName().toLower()/].providers.EJBExceptionMapper;
-import co.edu.uniandes.csw.[class.getModelName().toLower()/].services.[class.name/]Service;
+import [c.getModel().baseGroup()/].dtos.*;
+import [c.getModel().baseGroup()/].providers.EJBExceptionMapper;
+import [c.getModel().baseGroup()/].services.[c.getJaxRsName()/];
 
 
 import java.io.File;
@@ -45,22 +44,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;	
+import uk.co.jemos.podam.api.PodamFactoryImpl;  
 
 /**
  * @generated
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(Arquillian.class)
-public class [class.name/]ServiceTest {
+public class [className/] {
 
     public final static String URLRESOURCES = "src/main/webapp";
-    public final static String URLBASE = "http://localhost:8181/[class.getModelName()/].web/webresources";
-    public final static String PATH = "/[class.name.toLower()/]s";
+    public final static String URLBASE = "http://localhost:8181/[c.getModel().getWebProjectName()/]/webresources";
+    public final static String PATH = "/[c.getURI()/]";
     public final static int Ok = 200;
     public final static int Created = 201;
     public final static int OkWithoutContent = 204;
-    public final static List<[class.name/]DTO> data = new ArrayList<>();
+    public final static List<[c.getDTOName()/]> data = new ArrayList<>();
     
     /**
      * @generated
@@ -70,12 +69,12 @@ public class [class.name/]ServiceTest {
         MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
         WebArchive war = ShrinkWrap
                 // Nombre del Proyecto "AppMarketPlace.web" seguido de ".war". Debe ser el mismo nombre del proyecto web que contiene los javascript y los  servicios Rest
-                .create(WebArchive.class, "[class.getModelName()/].web.war")
+                .create(WebArchive.class, "[c.getModelName()/].web.war")
                 // Se agrega la dependencia a la logica con el nombre groupid:artefactid:version (GAV)
-                .addAsLibraries(resolver.artifact("co.edu.uniandes.csw.[class.getModelName().toLower()/]:[class.getModelName()/].logic:1.0")
+                .addAsLibraries(resolver.artifact("[c.getModel().baseGroup()/]:[c.getModel().getBackendProjectName()/]:1.0")
                         .resolveAsFiles())
                 // Se agregan los compilados de los paquetes de servicios
-                .addPackage([class.name/]Service.class.getPackage())
+                .addPackage([c.getJaxRsName()/].class.getPackage())
                 .addPackage(EJBExceptionMapper.class.getPackage())
                 // El archivo que contiene la configuracion a la base de datos. 
                 .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
@@ -95,8 +94,8 @@ public class [class.name/]ServiceTest {
     public static void setUp() throws IOException {
         for (int i = 0; i < 5; i++) {
             PodamFactory factory = new PodamFactoryImpl();
-            [class.name/]DTO [class.name.toLower()/] = factory.manufacturePojo([class.name/]DTO.class);
-            data.add([class.name.toLower()/]);
+            [c.getDTOName()/] dto = factory.manufacturePojo([c.getDTOName()/].class);
+            data.add(dto);
         }
 
     }
@@ -126,29 +125,26 @@ public class [class.name/]ServiceTest {
      */
     @Test
     @RunAsClient
-    public void t1Create[class.name/]() {
-        [class.name/]DTO [class.name.toLower()/] = data.get(0);
+    public void t1Create[c.name/]() {
+        [c.getDTOName()/] dto = data.get(0);
         Client cliente = ClientBuilder.newClient();
         PodamFactory factory = new PodamFactoryImpl();
         Response response;
-        [for (att : Association | class.getAssociations() )]
-        [if (class.name<>att.name.tokenize('_')->first())]
-        [att.name.tokenize('_')->first()/]DTO [att.name.tokenize('_')->first().toLower()/] = factory.manufacturePojo([att.name.tokenize('_')->first()/]DTO.class);
-        response = cliente.target(URLBASE).path("/[att.name.tokenize('_')->first().toLower()/]s")
+        [for (att : Property | c.getReferences(true) )]
+        [att.getClass().getDTOName()/] [att.name/] = factory.manufacturePojo([att.getClass().getDTOName()/].class);
+        response = cliente.target(URLBASE).path("/[att.getClass().getURI()/]")
                 .request()
-                .post(Entity.entity([att.name.tokenize('_')->first().toLower()/], MediaType.APPLICATION_JSON));
-        [att.name.tokenize('_')->first().toLower()/] = ([att.name.tokenize('_')->first()/]DTO) response.readEntity([att.name.tokenize('_')->first()/]DTO.class);
-        [class.name.toLower()/].set[att.name.tokenize('_')->first()/]([att.name.tokenize('_')->first().toLower()/]);
-        
-        [/if]
+                .post(Entity.entity([att.name/], MediaType.APPLICATION_JSON));
+        [att.name/] = ([att.getClass().getDTOName()/]) response.readEntity([att.getClass().getDTOName()/].class);
+        dto.[att.setter()/]([att.name/]);
+
         [/for]
-        
 
         response = cliente.target(URLBASE + PATH)
                 .request()
-                .post(Entity.entity([class.name.toLower()/], MediaType.APPLICATION_JSON));
-        [class.name/]DTO [class.name.toLower()/]Test = ([class.name/]DTO) response.readEntity([class.name/]DTO.class);
-        Assert.assertEquals([class.name.toLower()/].getId(), [class.name.toLower()/]Test.getId());
+                .post(Entity.entity(dto, MediaType.APPLICATION_JSON));
+        [c.getDTOName()/] result = ([c.getDTOName()/]) response.readEntity([c.getDTOName()/].class);
+        Assert.assertEquals(dto.getId(), result.getId());
         Assert.assertEquals(Created, response.getStatus());
     }    
     
@@ -157,11 +153,11 @@ public class [class.name/]ServiceTest {
      */
     @Test
     @RunAsClient
-    public void t2Get[class.name/]ById() {
+    public void t2Get[c.name/]ById() {
         Client cliente = ClientBuilder.newClient();
-        [class.name/]DTO [class.name.toLower()/]Test = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
-                .request().get([class.name/]DTO.class);
-        Assert.assertEquals([class.name.toLower()/]Test.getId(), data.get(0).getId());
+        [c.getDTOName()/] [c.name.toLower()/]Test = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
+                .request().get([c.getDTOName()/].class);
+        Assert.assertEquals([c.name.toLower()/]Test.getId(), data.get(0).getId());
     }
     
     /**
@@ -169,14 +165,14 @@ public class [class.name/]ServiceTest {
      */
     @Test
     @RunAsClient
-    public void t3Get[class.name/]s() throws IOException {
+    public void t3Get[c.name/]s() throws IOException {
         Client cliente = ClientBuilder.newClient();
         Response response = cliente.target(URLBASE + PATH)
                 .request().get();
-        String list[class.name/] = response.readEntity(String.class);
-        List<[class.name/]DTO> list[class.name/]Test = new ObjectMapper().readValue(list[class.name/], List.class);
+        String list[c.name/] = response.readEntity(String.class);
+        List<[c.getDTOName()/]> list[c.name/]Test = new ObjectMapper().readValue(list[c.name/], List.class);
         Assert.assertEquals(Ok, response.getStatus());
-        Assert.assertEquals(1, list[class.name/]Test.size());
+        Assert.assertEquals(1, list[c.name/]Test.size());
     }
     
     /**
@@ -184,26 +180,26 @@ public class [class.name/]ServiceTest {
      */
     @Test
     @RunAsClient
-    public void t4Update[class.name/]() throws IOException {
+    public void t4Update[c.name/]() throws IOException {
         Client cliente = ClientBuilder.newClient();
-        [class.name/]DTO [class.name.toLower()/] = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
-                .request().get([class.name/]DTO.class);
+        [c.getDTOName()/] [c.name.toLower()/] = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
+                .request().get([c.getDTOName()/].class);
         PodamFactory factory = new PodamFactoryImpl();
-        [class.name/]DTO [class.name.toLower()/]Changed = factory.manufacturePojo([class.name/]DTO.class);
-        [for (att : Property | class.attribute)]
-        [class.name.toLower()/].set[att.name.toUpperFirst()/]([class.name.toLower()/]Changed.get[att.name.toUpperFirst()/]());
+        [c.getDTOName()/] [c.name.toLower()/]Changed = factory.manufacturePojo([c.getDTOName()/].class);
+        [for (att : Property | c.attribute)]
+        [c.name.toLower()/].[att.setter()/]([c.name.toLower()/]Changed.[att.getter()/]());
         [/for]
         
         
         
                 
         
-        Response response = cliente.target(URLBASE + PATH).path("/" + [class.name.toLower()/].getId())
-                .request().put(Entity.entity([class.name.toLower()/], MediaType.APPLICATION_JSON));
-        [class.name/]DTO [class.name.toLower()/]Test = ([class.name/]DTO) response.readEntity([class.name/]DTO.class);
+        Response response = cliente.target(URLBASE + PATH).path("/" + [c.name.toLower()/].getId())
+                .request().put(Entity.entity([c.name.toLower()/], MediaType.APPLICATION_JSON));
+        [c.getDTOName()/] [c.name.toLower()/]Test = ([c.getDTOName()/]) response.readEntity([c.getDTOName()/].class);
         Assert.assertEquals(Ok, response.getStatus());
-        [for (att : Property | class.attribute)]
-        Assert.assertEquals([class.name.toLower()/].get[att.name.toUpperFirst()/](), [class.name.toLower()/]Test.get[att.name.toUpperFirst()/]());
+        [for (att : Property | c.attribute)]
+        Assert.assertEquals([c.name.toLower()/].[att.getter()/](), [c.name.toLower()/]Test.[att.getter()/]());
         [/for]
 
     }
@@ -213,15 +209,13 @@ public class [class.name/]ServiceTest {
      */
     @Test
     @RunAsClient
-    public void t5Delete[class.name/]() {
+    public void t5Delete[c.name/]() {
         Client cliente = ClientBuilder.newClient();
-        [class.name/]DTO [class.name.toLower()/] = data.get(0);
-        Response response = cliente.target(URLBASE + PATH).path("/" + [class.name.toLower()/].getId())
+        [c.getDTOName()/] [c.name.toLower()/] = data.get(0);
+        Response response = cliente.target(URLBASE + PATH).path("/" + [c.name.toLower()/].getId())
                 .request().delete();
         Assert.assertEquals(OkWithoutContent, response.getStatus());
     }
-
-
 }
 [/file]
 [/template]

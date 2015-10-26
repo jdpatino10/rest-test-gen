@@ -271,3 +271,7 @@ String[else]
 [template public getTestMetaInfPath(m : Model)]
 [m.getBackendProjectName().concat('/src/test/resources/META-INF/')/]
 [/template]
+
+[template public getAPITestName(c : Class)]
+[c.name.concat('ServiceTest')/]
+[/template]
