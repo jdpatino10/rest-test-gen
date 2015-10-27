@@ -49,7 +49,7 @@ public class [className/] {
 
     public final static String URLRESOURCES = "src/main/webapp";
     public final static String URLBASE = "http://localhost:8181/[c.getModel().getWebProjectName()/]/webresources";
-    public final static String PATH = "/[c.getURI()/]";
+    public final static String PATH = "[c.getURI()/]";
     public final static int Ok = 200;
     public final static int Created = 201;
     public final static int OkWithoutContent = 204;
@@ -102,8 +102,11 @@ public class [className/] {
         user.setUserName(username);
         user.setPassword(password);
 
-        Response response = cliente.target(URLBASE).path("/users/login").request().
-                post(Entity.entity(user, MediaType.APPLICATION_JSON));
+        Response response = cliente.target(URLBASE)
+                .path("users")
+                .path("login")
+                .request()
+                .post(Entity.entity(user, MediaType.APPLICATION_JSON));
 
         UserDTO foundUser = (UserDTO) response.readEntity(UserDTO.class);
 
@@ -120,13 +123,17 @@ public class [className/] {
     @Test
     @RunAsClient
     public void t1Create[c.name/]() {
+
+        //TODO Realizar login en caso de ser necesario
+
         [c.getDTOName()/] dto = data.get(0);
         Client cliente = ClientBuilder.newClient();
         PodamFactory factory = new PodamFactoryImpl();
         Response response;
         [for (att : Property | c.getReferences(true) )]
         [att.getClass().getDTOName()/] [att.name/] = factory.manufacturePojo([att.getClass().getDTOName()/].class);
-        response = cliente.target(URLBASE).path("/[att.getClass().getURI()/]")
+        response = cliente.target(URLBASE)
+                .path("[att.getClass().getURI()/]")
                 .request()
                 .post(Entity.entity([att.name/], MediaType.APPLICATION_JSON));
         [att.name/] = ([att.getClass().getDTOName()/]) response.readEntity([att.getClass().getDTOName()/].class);
@@ -134,7 +141,8 @@ public class [className/] {
 
         [/for]
 
-        response = cliente.target(URLBASE + PATH)
+        response = cliente.target(URLBASE)
+                .path(PATH)
                 .request()
                 .post(Entity.entity(dto, MediaType.APPLICATION_JSON));
         [c.getDTOName()/] result = ([c.getDTOName()/]) response.readEntity([c.getDTOName()/].class);
@@ -148,8 +156,13 @@ public class [className/] {
     @Test
     @RunAsClient
     public void t2Get[c.name/]ById() {
+
+        //TODO Realizar login en caso de ser necesario
+
         Client cliente = ClientBuilder.newClient();
-        [c.getDTOName()/] [c.name.toLower()/]Test = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
+        [c.getDTOName()/] [c.name.toLower()/]Test = cliente.target(URLBASE)
+                .path(PATH)
+                .path(data.get(0).getId().toString())
                 .request().get([c.getDTOName()/].class);
         Assert.assertEquals([c.name.toLower()/]Test.getId(), data.get(0).getId());
     }
@@ -160,8 +173,12 @@ public class [className/] {
     @Test
     @RunAsClient
     public void t3Get[c.name/]s() throws IOException {
+
+        //TODO Realizar login en caso de ser necesario
+
         Client cliente = ClientBuilder.newClient();
-        Response response = cliente.target(URLBASE + PATH)
+        Response response = cliente.target(URLBASE)
+                .path(PATH)
                 .request().get();
         String list[c.name/] = response.readEntity(String.class);
         List<[c.getDTOName()/]> list[c.name/]Test = new ObjectMapper().readValue(list[c.name/], List.class);
@@ -175,8 +192,13 @@ public class [className/] {
     @Test
     @RunAsClient
     public void t4Update[c.name/]() throws IOException {
+
+        //TODO Realizar login en caso de ser necesario
+
         Client cliente = ClientBuilder.newClient();
-        [c.getDTOName()/] [c.name.toLower()/] = cliente.target(URLBASE + PATH).path("/" + data.get(0).getId())
+        [c.getDTOName()/] [c.name.toLower()/] = cliente.target(URLBASE)
+                .path(PATH)
+                .path(data.get(0).getId().toString())
                 .request().get([c.getDTOName()/].class);
         PodamFactory factory = new PodamFactoryImpl();
         [c.getDTOName()/] [c.name.toLower()/]Changed = factory.manufacturePojo([c.getDTOName()/].class);
@@ -184,7 +206,9 @@ public class [className/] {
         [c.name.toLower()/].[att.setter()/]([c.name.toLower()/]Changed.[att.getter()/]());
         [/for]
 
-        Response response = cliente.target(URLBASE + PATH).path("/" + [c.name.toLower()/].getId())
+        Response response = cliente.target(URLBASE)
+                .path(PATH)
+                .path("/" + [c.name.toLower()/].getId())
                 .request().put(Entity.entity([c.name.toLower()/], MediaType.APPLICATION_JSON));
         [c.getDTOName()/] [c.name.toLower()/]Test = ([c.getDTOName()/]) response.readEntity([c.getDTOName()/].class);
         Assert.assertEquals(Ok, response.getStatus());
@@ -199,9 +223,14 @@ public class [className/] {
     @Test
     @RunAsClient
     public void t5Delete[c.name/]() {
+
+        //TODO Realizar login en caso de ser necesario
+
         Client cliente = ClientBuilder.newClient();
         [c.getDTOName()/] [c.name.toLower()/] = data.get(0);
-        Response response = cliente.target(URLBASE + PATH).path("/" + [c.name.toLower()/].getId())
+        Response response = cliente.target(URLBASE)
+                .path(PATH)
+                .path([c.name.toLower()/].getId().toString())
                 .request().delete();
         Assert.assertEquals(OkWithoutContent, response.getStatus());
     }
