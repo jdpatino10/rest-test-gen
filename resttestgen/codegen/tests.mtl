@@ -4,7 +4,7 @@
 
 [template public genRestTest(c : Class, path : String) {className : String = c.getAPITestName();}]
 [file (path.concat(className+'.java'), false, 'UTF-8')]
-package [c.getModel().baseGroup()/].test;
+package [c.getModel().baseGroup()/].tests;
 
 import [c.getModel().baseGroup()/].dtos.*;
 import [c.getModel().baseGroup()/].providers.EJBExceptionMapper;
