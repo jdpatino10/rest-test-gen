@@ -15,7 +15,7 @@
     [/let]
 
     [let path : String = c.getModel().getWebProjectName().concat(c.getModel().baseTestPath()).concat('tests/')]
-        [c.genRestTest(path.concat('tests/'))/]
+        [c.genRestTest(path)/]
     [/let]
 [/for]
 [/template]
